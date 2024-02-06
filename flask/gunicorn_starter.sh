@@ -1,12 +1,18 @@
 #!/bin/sh
-# gunicorn main:app --chdir app -w 2 --threads 2 -b 0.0.0.0:8000 --reload
+if [ "$APP_ENV" = "development" ]; then
+    echo "Creating the database tables..."
+    python3 manage.py create_db
+    python3 manage.py seed_db
+    echo "Tables created"
 
 
-# gunicorn main:app -c "$PWD"/gunicorn.config.py
-
-if [ "$FLASK_DEBUG" = "1" ]; then
-    echo "Running on Flask Development Server"
-    python3 main.py
+    if [ "$FLASK_DEBUG" = "1" ]; then
+        echo "Running on Flask Development Server"
+        python3 main.py
+    else
+        echo "Running on gunicorn"
+        gunicorn main:app -c "$PWD"/gunicorn.config.py
+    fi
 else
     echo "Running on gunicorn"
     gunicorn main:app -c "$PWD"/gunicorn.config.py
