@@ -1,6 +1,7 @@
 from app import db
+from sqlalchemy_serializer import SerializerMixin
 
-class Contact(db.Model):
+class Contact(db.Model, SerializerMixin):
     __tablename__ = "contacts"
 
     id = db.Column(db.Integer, primary_key=True)
