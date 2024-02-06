@@ -1,5 +1,6 @@
 import os
 from flask import Flask
+from werkzeug.debug import DebuggedApplication
 from flask_sqlalchemy import SQLAlchemy
 
 
@@ -17,6 +18,10 @@ app.config['DEBUG'] = True
 app.config['SECRET_KEY'] = \
     '5f0be0bc90b9160b99991d46fbf7f3e924696932925d043c'
 app.config['JSON_AS_ASCII'] = False
+
+if app.debug:
+    app.wsgi_app = DebuggedApplication(app.wsgi_app, evalex=True)
+  
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL", "sqlite://")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
