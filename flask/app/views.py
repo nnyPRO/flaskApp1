@@ -1,5 +1,5 @@
 from flask import (jsonify, render_template,
-                  request, url_for, flash, redirect)
+                   request, url_for, flash, redirect)
 from flask_login import login_user, login_required, logout_user, current_user
 from app.models.authuser import AuthUser, PrivateContact
 from flask_login import login_user, login_required, logout_user
@@ -13,7 +13,6 @@ from app import db
 from app import login_manager
 from app.models.contact import Contact
 from app.models.authuser import AuthUser
-
 
 
 @app.route('/')
@@ -41,7 +40,6 @@ def lab04_bootstrap():
     return app.send_static_file('lab04_bootstrap.html')
 
 
-
 @app.route('/lab10', methods=('GET', 'POST'))
 def lab10_phonebook():
     if request.method == 'POST':
@@ -52,7 +50,6 @@ def lab10_phonebook():
         validated_dict = dict()
         valid_keys = ['firstname', 'lastname', 'phone']
 
-
         # validate the input
         for key in result:
             app.logger.debug(f"{key}: {result[key]}")
@@ -60,13 +57,11 @@ def lab10_phonebook():
             if key not in valid_keys:
                 continue
 
-
             value = result[key].strip()
             if not value or value == 'undefined':
                 validated = False
                 break
             validated_dict[key] = value
-
 
         if validated:
             app.logger.debug(f'validated dict: {validated_dict}')
@@ -83,7 +78,6 @@ def lab10_phonebook():
                 contact = PrivateContact.query.get(id_)
                 if contact.owner_id == current_user.id:
                     contact.update(**validated_dict)
-
 
             db.session.commit()
 
@@ -109,19 +103,38 @@ def lab10_remove_contacts():
     if request.method == 'POST':
         result = request.form.to_dict()
         id_ = result.get('id', '')
-        try:
-            contact = Contact.query.get(id_)
-            db.session.delete(contact)
-            db.session.commit()
-        except Exception as ex:
-           app.logger.error(f"Error removing contact with id {id_}: {ex}")
-           raise
+        validated = True
+        validated_dict = dict()
+        valid_keys = ['firstname', 'lastname', 'phone']
+
+        # validate the input
+        for key in result:
+            app.logger.debug(f"{key}: {result[key]}")
+            # screen of unrelated inputs
+            if key not in valid_keys:
+                continue
+
+            value = result[key].strip()
+            if not value or value == 'undefined':
+                validated = False
+                break
+            validated_dict[key] = value
+
+        if validated:
+            try:
+                contact = Contact.query.get(id_)
+                db.session.delete(contact)
+                db.session.commit()
+            except Exception as ex:
+                app.logger.error(f"Error removing contact with id {id_}: {ex}")
+            raise
+
     return lab10_db_contacts()
 
 
 @app.route('/lab11')
 def lab11_index():
-   return render_template('lab11/base.html')
+    return render_template('lab11/base.html')
 
 
 @app.route('/lab11/profile')
@@ -138,9 +151,8 @@ def lab11_login():
         password = request.form.get('password')
         remember = bool(request.form.get('remember'))
 
-
         user = AuthUser.query.filter_by(email=email).first()
- 
+
         # check if the user actually exists
         # take the user-supplied password, hash it, and compare it to the
         # hashed password in the database
@@ -148,7 +160,6 @@ def lab11_login():
             flash('Please check your login details and try again.')
             # if the user doesn't exist or password is wrong, reload the page
             return redirect(url_for('lab11_login'))
-
 
         # if the above check passes, then we know the user has the right
         # credentials
@@ -158,9 +169,7 @@ def lab11_login():
             next_page = url_for('lab11_profile')
         return redirect(next_page)
 
-
     return render_template('lab11/login.html')
-
 
 
 @app.route('/lab11/signup', methods=('GET', 'POST'))
@@ -169,7 +178,7 @@ def lab11_signup():
     if request.method == 'POST':
         result = request.form.to_dict()
         app.logger.debug(str(result))
- 
+
         validated = True
         validated_dict = {}
         valid_keys = ['email', 'name', 'password']
