@@ -41,6 +41,7 @@ def lab04_bootstrap():
 
 
 @app.route('/lab10', methods=('GET', 'POST'))
+@login_required
 def lab10_phonebook():
     if request.method == 'POST':
         result = request.form.to_dict()
@@ -98,36 +99,20 @@ def lab10_db_contacts():
 
 
 @app.route('/lab10/remove_contact', methods=('GET', 'POST'))
+@login_required
 def lab10_remove_contacts():
     app.logger.debug("LAB10 - REMOVE")
     if request.method == 'POST':
         result = request.form.to_dict()
         id_ = result.get('id', '')
-        validated = True
-        validated_dict = dict()
-        valid_keys = ['firstname', 'lastname', 'phone']
-
-        # validate the input
-        for key in result:
-            app.logger.debug(f"{key}: {result[key]}")
-            # screen of unrelated inputs
-            if key not in valid_keys:
-                continue
-
-            value = result[key].strip()
-            if not value or value == 'undefined':
-                validated = False
-                break
-            validated_dict[key] = value
-
-        if validated:
-            try:
-                contact = Contact.query.get(id_)
+        try:
+            contact = PrivateContact.query.get(id_)
+            if contact.owner_id == current_user.id:
                 db.session.delete(contact)
                 db.session.commit()
-            except Exception as ex:
-                app.logger.error(f"Error removing contact with id {id_}: {ex}")
-            raise
+        except Exception as ex:
+            app.logger.error(f"Error removing contact with id {id_}: {ex}")
+        raise
 
     return lab10_db_contacts()
 
