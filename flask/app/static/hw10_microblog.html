@@ -1,0 +1,264 @@
+<!-- 
+เมษนี ลายเฮือง (แนน)
+650510676
+lab04 204212 sec001 -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+
+    <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="static/css/open-iconic-bootstrap.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"
+    />
+
+    <!-- Bootstrap Table -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/bootstrap-table@1.21.2/dist/bootstrap-table.min.css"
+    />
+    <script src="https://unpkg.com/bootstrap-table@1.21.2/dist/bootstrap-table.min.js"></script>
+
+    <link rel="stylesheet" href="static/css/mytwitter.css" />
+    <title>My Twitter</title>
+  </head>
+
+  <body>
+    <!-- navigation bar -->
+    <nav class="navbar navbar-expand-md navbar-light">
+      <div class="container">
+        <div class="navbar-nav">
+          <a class="nav-item nav-link" href="#"><span class="c"></span> Home</a>
+          <a class="nav-item nav-link" href="#"
+            ><span class="oi oi-bolt"></span> Moments</a
+          >
+          <a class="nav-item nav-link" href="#"
+            ><span class="oi oi-bell"></span> Notifications</a
+          >
+          <a class="nav-item nav-link" href="#"
+            ><span class="oi oi-envelope-open"></span> Messages</a
+          >
+        </div>
+        <form class="form-inline">
+          <input
+            class="form-control"
+            id="nav-search"
+            type="search"
+            placeholder="Search Twitter"
+          />
+          &nbsp;
+          <img
+            class="tw-user-small rounded-circle"
+            src="static/img/tweeterUserSmall.jpg"
+          />
+          &nbsp;
+          <button class="btn" id="nav-tweet-btn" type="submit">Tweet</button>
+        </form>
+      </div>
+    </nav>
+
+    <!-- 3 columns layout right below our navigation bar -->
+    <div class="container">
+      <div class="row">
+        <div id="left_3" class="col-md-3">
+          <div class="content-box">Account details</div>
+          <div class="content-box">Trends</div>
+        </div>
+
+        <div id="center_6" class="col-md-6">
+          <div class="content-box">
+            <!-- ช่องที่เอาไว้เพิ่ม tweet ใหม่ -->
+            <div class="new-tweet-row">
+              <div class="row">
+                <div class="col-md-2">
+                  <img
+                    src="static/img/tweeterUserSmall.jpg"
+                    class="tw-user-small rounded-circle mx-auto d-block"
+                  />
+                </div>
+                <div class="col-md-9">
+                  <form id="addTweetForm" class="formInput">
+                    <!--ชื่อผู้ใช้ทวิต-->
+                    <label for="name">Name</label>
+                    <input
+                      type="text"
+                      id="tweet-input nameIP"
+                      class="form-control"
+                      name="name"
+                      placeholder="Type your name ..."
+                      required
+                    />
+                    <!--email-->
+                    <label for="email">Email</label>
+                    <input
+                      type="email"
+                      id="tweet-input"
+                      class="form-control"
+                      name="email"
+                      placeholder="Type your email ..."
+                      required
+                    />
+                    <!--เนื้อหาทวิต-->
+                    <label for="textare">Message</label>
+                    <textarea
+                      id="tweet-input"
+                      class="form-control"
+                      placeholder="Whats happening ..?"
+                      name="textarea"
+                      rows="5"
+                      cols="30"
+                      required
+                    ></textarea>
+                    <!-- <input type="file" id="imageInput" accept="image/*">-->
+                    <!-- <img src="/images/uploadButton.png" id="upfile1" style="cursor:pointer" />
+                    <input type="file" id="file1"  name="file1" style="display:none" />
+                    -->
+                    <br />
+                    <label for="imageInput">Select an image:</label>
+                    <input
+                      type="file"
+                      id="imageInput"
+                      name="image"
+                      accept="image/*"
+                    />
+                    <input type="hidden" id="entryid" name="id" value="" />
+                    <!-- <input type="submit" value="Submit" /> -->
+                    <button onclick="myFunction()">Try it</button>
+                  </form>
+                  
+                </div>
+              </div>
+            </div>
+
+            <div class="tweet">
+            </div>
+          </div>
+        </div>
+
+        <div id="right_3" class="col-md-3">
+          <div class="content-box">Who to follow</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+
+      $(document).ready(function () {
+        (function () {
+          $.get("/hw10/blogEntries", (contacts)=>{
+            console.log(contacts);
+            $.each(contacts, (index, value)=>{
+              addPost(value)
+            })
+          });
+        })();
+      });
+
+      //func นี้จะสั่งให้ตารางโหลดเนื้อหาที่จัดเก็บไว้ในตัวแปร contact_data
+      // refresh the table after a read update
+      function addPost(contact_data) {
+        console.log(contact_data)
+        const post_block = `<div class="row">
+          <!-- ด้ายซ้าย รูปโปรไฟล์ผู้ใช้ของแต่ละทวิต -->
+          <div class="col-md-2 text-center">
+            <img
+              class="tw-user-medium rounded-circle"
+              src="static/img/tweeterUserSmall.jpg"
+            />
+          </div>
+
+          <!-- ด้านขวา ข้อมูล tweet -->
+          <div id="formPost">
+            
+          </div>
+          <div id="post-tweet" class="col-md-10" >
+            <div class="row tweet-info">
+              <!-- ชื่อผู้ใช้ทวิต -->
+              <div class="col-md-auto">
+                <span class="tweet-username" id="namePost">${contact_data.name}</span>
+                <span class="tweet-usertag text-muted">${contact_data.email}</span
+                >-
+                <span class="tweet-age text-muted">1d</span>
+              </div>
+              <!-- ลูกศร -->
+              <div class="col tweet-arrow text-muted">
+                <span class="oi oi-arrow-thick-bottom float-right"></span>
+              </div>
+            </div>
+            
+            <div class="tweet-text">
+              The cat is about to go in and wake up the Shiba. It's a very
+              cute picture!.
+            </div>
+            
+            <div class="row text-muted">
+              <div class="col-md-2">
+                <span class="oi oi-bullhorn"></span>
+              </div>
+              <div class="col-md-2">
+                <span class="oi oi-loop-circular"></span>
+              </div>
+              <div class="col-md-2">
+                <span class="oi oi-heart"></span>
+              </div>
+              <div class="col-md-2">
+                <span class="oi oi-envelope-open"></span>
+              </div>
+            </div>
+          </div>
+        </div>`;
+        console.log($(".tweet").html())
+        $(".tweet").html($(".tweet").html()+post_block);
+      }
+
+      $(".formInput").submit(function (event) {
+        // prevent default html form submission action
+        event.preventDefault();
+
+      // pack the inputs into a dictionary
+      var formData = {};
+      $(":input").each(function () {
+        var key = $(this).attr("name");
+        var val = $(this).val();
+        if (key != "submit") {
+          formData[key] = val;
+        }
+      });
+
+      var $form = $(this);
+      var url = $form.attr("action");
+     
+      // make a POST call to the back end w/ a callback to refresh the table
+      $.post(url, formData, function (contact_data) {
+        addPost(contact_data);
+        clearForm();
+      });
+    });
+
+    function clearForm() {
+      $(".formInput")[0].reset();
+      $("#entryid").val("");
+    }
+
+    </script>
+
+ 
+
+
+
+    <!-- Optional JavaScript -->
+    
+  </body>
+</html>
