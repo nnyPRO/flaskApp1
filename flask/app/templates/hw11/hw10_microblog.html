@@ -31,6 +31,7 @@ lab04 204212 sec001 -->
     />
     <script src="https://unpkg.com/bootstrap-table@1.21.2/dist/bootstrap-table.min.js"></script>
 
+    
     <link rel="stylesheet" href="static/css/mytwitter.css" />
     <title>My Twitter</title>
   </head>
@@ -41,11 +42,11 @@ lab04 204212 sec001 -->
       <div class="container">
         <div class="navbar-nav">
           <a class="nav-item nav-link" href="#"><span class="c"></span> Home</a>
-          <a class="nav-item nav-link" href="#"
-            ><span class="oi oi-bolt"></span> Moments</a
+          <a class="nav-item nav-link" href="{{ url_for('hw11_login') }}"
+            ><span class="oi"></span> Login</a
           >
-          <a class="nav-item nav-link" href="#"
-            ><span class="oi oi-bell"></span> Notifications</a
+          <a class="nav-item nav-link" href="{{ url_for('hw11_signup') }}"
+            ><span class="oi"></span> Sign Up</a
           >
           <a class="nav-item nav-link" href="#"
             ><span class="oi oi-envelope-open"></span> Messages</a
@@ -65,6 +66,7 @@ lab04 204212 sec001 -->
           />
           &nbsp;
           <button class="btn" id="nav-tweet-btn" type="submit">Tweet</button>
+          <!-- <button class="btn" id="login" href="{{ url_for('hw11_login') }}">Login</button> -->
         </form>
       </div>
     </nav>
@@ -124,7 +126,7 @@ lab04 204212 sec001 -->
                     ></textarea>
                     <br />
                     <input type="hidden" id="entryid" name="id" value="" />
-                    <input type="submit" value="Submit" />
+                    <input type="submit" id="sub" value="Submit" />
                     <button id="cancelPost">Cancel</button>
                   </form>
                   
@@ -174,6 +176,63 @@ lab04 204212 sec001 -->
       //func นี้จะสั่งให้ตารางโหลดเนื้อหาที่จัดเก็บไว้ในตัวแปร contact_data
       // refresh the table after a read update
       function addPost(contact_data) {
+        const post_block = `<div class="row">
+          <!-- ด้ายซ้าย รูปโปรไฟล์ผู้ใช้ของแต่ละทวิต -->
+          <div class="col-md-2 text-center">
+            <img
+              class="tw-user-medium rounded-circle"
+              src="static/img/tweeterUserSmall.jpg"
+            />
+          </div>
+
+          <!-- ด้านขวา ข้อมูล tweet -->
+          <div id="post-tweet" class="col-md-10" >
+            <div class="row tweet-info">
+              <!-- ชื่อผู้ใช้ทวิต -->
+              <div class="col-md-auto">
+                <span class="tweet-username" id="nameEdit">${contact_data.name}</span>
+                <span class="tweet-usertag text-muted id="emailEdit">${contact_data.email}</span
+                >
+                </br>
+                <span class="tweet-age text-muted">${contact_data.date_created}</span>
+                
+              </div>
+              <!-- ลูกศร -->
+              <div class="col tweet-arrow text-muted">
+                <span class="oi oi-arrow-thick-bottom float-right"></span>
+              </div>
+            </div>
+            
+            <div class="tweet-text">
+              
+              ${contact_data.message}
+            </div>
+            
+            <div class="row text-muted">
+              <div class="col-md-2">
+                <span class="oi oi-loop-circular"></span>
+              </div>
+              <div class="col-md-2">
+                <span class="oi oi-heart"></span>
+              </div>
+              <div class="col-md-2">
+                <span class="oi oi-envelope-open"></span>
+              </div>
+              <div class="col-md-2">
+                <span><button id="edit" onclick="editPost(this)" dataContact='${JSON.stringify(contact_data)}' href="javascript:void(0)" title="Edit">
+                  ✏️</button></span>
+              </div>
+              <div class="col-md-2">
+                <span><button id="remove" onclick="removePost(this)" dataContact='${JSON.stringify(contact_data)}' href="javascript:void(0)" title="Remove">
+                  🗑️</button></span>
+              </div>
+            </div>
+          </div>
+        </div>`;
+        $(".tweet").html($(".tweet").html()+post_block);
+      }
+
+      function updatePost(contact_data) {
         const post_block = `<div class="row">
           <!-- ด้ายซ้าย รูปโปรไฟล์ผู้ใช้ของแต่ละทวิต -->
           <div class="col-md-2 text-center">
@@ -260,11 +319,16 @@ lab04 204212 sec001 -->
           //console.log(formData)
           //ขอข้อมูลจากหลังบ้านส่งมาหน้าบ้าน
           $.get("/hw10/blogEntries", (contacts)=>{
-            //console.log(contacts);
+            
             // Reverse the array
             contacts.reverse();
             $.each(contacts, (index, value)=>{
-              addPost(value)
+              if (value.date_updated == null){
+                addPost(value)
+              }
+              else{
+                updatePost(value)
+              }
             })
 
           });
@@ -314,6 +378,36 @@ lab04 204212 sec001 -->
           
     </script>
 
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+  
+  
+        // Get all "navbar-burger" elements
+        const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+  
+  
+       // Add a click event on each of them
+        $navbarBurgers.forEach(el => {
+          el.addEventListener('click', () => {
+  
+  
+           // Get the target from the "data-target" attribute
+            const target = el.dataset.target;
+            const $target = document.getElementById(target);
+  
+  
+            // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
+            el.classList.toggle('is-active');
+            $target.classList.toggle('is-active');
+  
+  
+          });
+        });
+  
+  
+      });
+    </script>
  
 
 

@@ -21,10 +21,21 @@ img.tw-user-medium {
   background-color: #e7ecf0;
 }
 
-#nav-tweet-btn {
+#nav-tweet-btn, #newPost,  #sub, #cancelPost {
   border-radius: 20px;
   background-color: #67b1f9;
   color: #ffffff;
+  border: none;
+  padding: 5px;
+}
+
+#login{
+  margin: 5px;
+  border-radius: 20px;
+  background-color: #67b1f9;
+  color: #ffffff;
+  border: none;
+  padding: 5px;
 }
 
 .content-box {
@@ -67,5 +78,6 @@ img.tw-user-medium {
 .formInput{
   display: none;
 }
+
 
 

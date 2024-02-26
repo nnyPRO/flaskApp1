@@ -4,7 +4,7 @@
 
 from flask import jsonify, render_template, redirect, url_for, flash, request, redirect
 from flask_login import login_user, login_required, logout_user, current_user
-from app import app, db
+from app import app, db, login_manager
 import json
 import bcrypt
 from urllib.request import urlopen
@@ -13,6 +13,10 @@ import calendar
 from app.forms import forms
 from app.models.blogEntry import BlogEntry
 from app.models.authuser import AuthUser, PrivateContact
+from werkzeug.security import check_password_hash
+from werkzeug.urls import url_parse
+from werkzeug.security import generate_password_hash, check_password_hash
+
 
 
 @app.route('/weather')
@@ -288,7 +292,7 @@ def hw10():
 
             db.session.commit()
         return hw10_db_blogEntries()
-    return app.send_static_file('hw10_microblog.html')
+    return render_template('hw11/hw10_microblog.html')
 
 
 @app.route('/hw10/blogEntries')
@@ -303,9 +307,7 @@ def hw10_db_blogEntries():
 
 
 @app.route('/hw10/remove_blogEntries', methods=('GET', 'POST'))
-
 def hw10_remove_blogEntries():
-    app.logger.debug("55555555555555555555555555555555")
     if request.method == 'POST':
         result = request.form.to_dict()
         id_ = result.get('id', '')
@@ -314,3 +316,116 @@ def hw10_remove_blogEntries():
         db.session.commit()
 
     return hw10_db_blogEntries()
+
+
+@app.route('/hw11/login', methods=('GET', 'POST'))
+def hw11_login():
+    if request.method == 'POST':
+        # login code goes here
+        email = request.form.get('email')
+        password = request.form.get('password')
+        remember = bool(request.form.get('remember'))
+
+        user = AuthUser.query.filter_by(email=email).first()
+
+        # check if the user actually exists
+        # take the user-supplied password, hash it, and compare it to the
+        # hashed password in the database
+        if not user or not check_password_hash(user.password, password):
+            flash('Please check your login details and try again.')
+            # if the user doesn't exist or password is wrong, reload the page
+            return redirect(url_for('lab11_login'))
+
+        # if the above check passes, then we know the user has the right
+        # credentials
+        login_user(user, remember=remember)
+        next_page = request.args.get('next')
+        if not next_page or url_parse(next_page).netloc != '':
+            next_page = url_for('lab11_profile')
+        return redirect(next_page)
+
+    return render_template('hw11/login.html')
+
+@app.route('/hw11/signup', methods=('GET', 'POST'))
+def hw11_signup():
+
+    if request.method == 'POST':
+        result = request.form.to_dict()
+        app.logger.debug(str(result))
+
+        validated = True
+        validated_dict = {}
+        valid_keys = ['email', 'name', 'password']
+
+        # validate the input
+        for key in result:
+            app.logger.debug(str(key)+": " + str(result[key]))
+            # screen of unrelated inputs
+            if key not in valid_keys:
+                continue
+
+            value = result[key].strip()
+            if not value or value == 'undefined':
+                validated = False
+                break
+            validated_dict[key] = value
+            # code to validate and add user to database goes here
+        app.logger.debug("validation done")
+        if validated:
+            app.logger.debug('validated dict: ' + str(validated_dict))
+            email = validated_dict['email']
+            name = validated_dict['name']
+            password = validated_dict['password']
+            # if this returns a user, then the email already exists in database
+            user = AuthUser.query.filter_by(email=email).first()
+
+            if user:
+                # if a user is found, we want to redirect back to signup
+                # page so user can try again
+                flash('Email address already exists')
+                return redirect(url_for('hw11_signup'))
+
+            # create a new user with the form data. Hash the password so
+            # the plaintext version isn't saved.
+            app.logger.debug("preparing to add")
+            avatar_url = gen_avatar_url(email, name)
+            new_user = AuthUser(email=email, name=name,
+                                password=generate_password_hash(
+                                    password, method='sha256'),
+                                avatar_url=avatar_url)
+            # add the new user to the database
+            db.session.add(new_user)
+            db.session.commit()
+
+        return redirect(url_for('hw11_login'))
+    return render_template('hw11/signup.html')
+
+
+def gen_avatar_url(email, name):
+    bgcolor = generate_password_hash(email, method='sha256')[-6:]
+    color = hex(int('0xffffff', 0) -
+                int('0x'+bgcolor, 0)).replace('0x', '')
+    lname = ''
+    temp = name.split()
+    fname = temp[0][0]
+    if len(temp) > 1:
+        lname = temp[1][0]
+
+    avatar_url = "https://ui-avatars.com/api/?name=" + \
+        fname + "+" + lname + "&background=" + \
+        bgcolor + "&color=" + color
+    return avatar_url
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    # since the user_id is just the primary key of our
+    # user table, use it in the query for the user
+    return AuthUser.query.get(int(user_id))
+
+
+@app.route('/hw11/logout')
+@login_required
+def hw11_logout():
+    logout_user()
+    return redirect(url_for('hw10_microblog'))
