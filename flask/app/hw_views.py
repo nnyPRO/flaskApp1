@@ -254,6 +254,7 @@ def hw06_users():
     return render_template('lab06/hw06_users.html', user_list=user_list)
 
 
+
 @app.route('/hw10',  methods=('GET', 'POST'))
 def hw10():
     if request.method == 'POST':
@@ -334,7 +335,7 @@ def hw11_login():
         if not user or not check_password_hash(user.password, password):
             flash('Please check your login details and try again.')
             # if the user doesn't exist or password is wrong, reload the page
-            return redirect(url_for('lab11_login'))
+            return redirect(url_for('hw11_login'))
 
         # if the above check passes, then we know the user has the right
         # credentials
@@ -428,4 +429,4 @@ def load_user(user_id):
 @login_required
 def hw11_logout():
     logout_user()
-    return redirect(url_for('hw10_microblog'))
+    return redirect(url_for('hw10'))
