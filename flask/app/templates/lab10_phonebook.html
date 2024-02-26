@@ -143,6 +143,7 @@
       }
 
       function actionFormatter(value, row, index) {
+        //console.log(index)
         return [
           '<a class="edit" href="javascript:void(0)" title="Edit">',
           "✏️",
@@ -155,6 +156,7 @@
 
       window.operateEvents = {
         "click .edit": function (e, value, row, index) {
+          console.log(index)
           prePopulateForm(row);
         },
         "click .remove": function (e, value, row, index) {
@@ -163,6 +165,7 @@
       };
 
       function prePopulateForm(row) {
+        //console.log(row)
         $("#addPhoneNumberForm")[0].reset();
         $("#firstname").val(row.firstname);
         $("#lastname").val(row.lastname);

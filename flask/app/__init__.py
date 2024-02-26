@@ -24,6 +24,7 @@ app.config['GOOGLE_CLIENT_SECRET'] = os.getenv("GOOGLE_CLIENT_SECRET", None)
 app.config['GOOGLE_DISCOVERY_URL'] = os.getenv("GOOGLE_DISCOVERY_URL", None)
 
 
+
 if app.debug:
     app.wsgi_app = DebuggedApplication(app.wsgi_app, evalex=True)
 

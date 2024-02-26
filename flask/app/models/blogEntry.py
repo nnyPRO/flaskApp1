@@ -18,5 +18,9 @@ class BlogEntry(db.Model, SerializerMixin):
         self.message = message
         self.email = email
         self.date_created = datetime.now(timezone.utc)
+
+    def update(self, name, message, email):
+        self.name = name
+        self.message = message
+        self.email = email
         self.date_updated = datetime.now(timezone.utc)
-        

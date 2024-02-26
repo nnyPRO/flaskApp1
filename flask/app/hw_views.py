@@ -3,6 +3,7 @@
 # Sec001
 
 from flask import jsonify, render_template, redirect, url_for, flash, request, redirect
+from flask_login import login_user, login_required, logout_user, current_user
 from app import app, db
 import json
 import bcrypt
@@ -11,6 +12,7 @@ import datetime
 import calendar
 from app.forms import forms
 from app.models.blogEntry import BlogEntry
+from app.models.authuser import AuthUser, PrivateContact
 
 
 @app.route('/weather')
@@ -270,11 +272,12 @@ def hw10():
                 validated = False
                 break
             validated_dict[key] = value
-            
+
         if validated:
             app.logger.debug('validated dict: ' + str(validated_dict))
             # if there is no id: create a new contact entry
             if not id_:
+                print(validated_dict)
                 entry = BlogEntry(**validated_dict)
                 app.logger.debug(str(entry))
                 db.session.add(entry)
@@ -284,7 +287,6 @@ def hw10():
                 blogEntry.update(**validated_dict)
 
             db.session.commit()
-
         return hw10_db_blogEntries()
     return app.send_static_file('hw10_microblog.html')
 
@@ -298,3 +300,17 @@ def hw10_db_blogEntries():
     app.logger.debug("DB Contacts: " + str(blogEntries))
 
     return jsonify(blogEntries)
+
+
+@app.route('/hw10/remove_blogEntries', methods=('GET', 'POST'))
+
+def hw10_remove_blogEntries():
+    app.logger.debug("55555555555555555555555555555555")
+    if request.method == 'POST':
+        result = request.form.to_dict()
+        id_ = result.get('id', '')
+        blogEntry = BlogEntry.query.get(id_)
+        db.session.delete(blogEntry)
+        db.session.commit()
+
+    return hw10_db_blogEntries()

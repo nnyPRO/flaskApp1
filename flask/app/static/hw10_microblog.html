@@ -89,12 +89,13 @@ lab04 204212 sec001 -->
                   />
                 </div>
                 <div class="col-md-9">
+                  <button id="newPost">Creat new post</button>
                   <form id="addTweetForm" class="formInput">
                     <!--ชื่อผู้ใช้ทวิต-->
                     <label for="name">Name</label>
                     <input
                       type="text"
-                      id="tweet-input nameIP"
+                      id="tweet-input namePost"
                       class="form-control"
                       name="name"
                       placeholder="Type your name ..."
@@ -104,7 +105,7 @@ lab04 204212 sec001 -->
                     <label for="email">Email</label>
                     <input
                       type="email"
-                      id="tweet-input"
+                      id="tweet-input emailPost"
                       class="form-control"
                       name="email"
                       placeholder="Type your email ..."
@@ -113,36 +114,27 @@ lab04 204212 sec001 -->
                     <!--เนื้อหาทวิต-->
                     <label for="textare">Message</label>
                     <textarea
-                      id="tweet-input"
+                      id="tweet-input messagePost"
                       class="form-control"
                       placeholder="Whats happening ..?"
-                      name="textarea"
+                      name="message"
                       rows="5"
                       cols="30"
                       required
                     ></textarea>
-                    <!-- <input type="file" id="imageInput" accept="image/*">-->
-                    <!-- <img src="/images/uploadButton.png" id="upfile1" style="cursor:pointer" />
-                    <input type="file" id="file1"  name="file1" style="display:none" />
-                    -->
                     <br />
-                    <label for="imageInput">Select an image:</label>
-                    <input
-                      type="file"
-                      id="imageInput"
-                      name="image"
-                      accept="image/*"
-                    />
                     <input type="hidden" id="entryid" name="id" value="" />
-                    <!-- <input type="submit" value="Submit" /> -->
-                    <button onclick="myFunction()">Try it</button>
+                    <input type="submit" value="Submit" />
+                    <button id="cancelPost">Cancel</button>
                   </form>
                   
                 </div>
               </div>
             </div>
 
+            <!-- ส่วนที่เอาไว้เพิ่มโพสต์ -->
             <div class="tweet">
+
             </div>
           </div>
         </div>
@@ -154,22 +146,34 @@ lab04 204212 sec001 -->
     </div>
 
     <script>
-
+      
       $(document).ready(function () {
+        $('#newPost').click(function(){
+          clearForm();
+          $('.formInput').show();
+          $('.tweet').hide();
+        })
+        $('#cancelPost').click(function(){
+          clearForm();
+          $('.tweet').show();
+          $('.formInput').hide();
+          
+        })
+      
+      });
         (function () {
           $.get("/hw10/blogEntries", (contacts)=>{
-            console.log(contacts);
+            //console.log(contacts);
             $.each(contacts, (index, value)=>{
               addPost(value)
             })
           });
         })();
-      });
+      
 
       //func นี้จะสั่งให้ตารางโหลดเนื้อหาที่จัดเก็บไว้ในตัวแปร contact_data
       // refresh the table after a read update
       function addPost(contact_data) {
-        console.log(contact_data)
         const post_block = `<div class="row">
           <!-- ด้ายซ้าย รูปโปรไฟล์ผู้ใช้ของแต่ละทวิต -->
           <div class="col-md-2 text-center">
@@ -180,17 +184,17 @@ lab04 204212 sec001 -->
           </div>
 
           <!-- ด้านขวา ข้อมูล tweet -->
-          <div id="formPost">
-            
-          </div>
           <div id="post-tweet" class="col-md-10" >
             <div class="row tweet-info">
               <!-- ชื่อผู้ใช้ทวิต -->
               <div class="col-md-auto">
-                <span class="tweet-username" id="namePost">${contact_data.name}</span>
-                <span class="tweet-usertag text-muted">${contact_data.email}</span
-                >-
-                <span class="tweet-age text-muted">1d</span>
+                <span class="tweet-username" id="nameEdit">${contact_data.name}</span>
+                <span class="tweet-usertag text-muted id="emailEdit">${contact_data.email}</span
+                >
+                </br>
+                <span class="tweet-age text-muted">${contact_data.date_created}</span>
+                </br>
+                <span class="tweet-age text-muted">Update post when ${contact_data.date_updated}</span>
               </div>
               <!-- ลูกศร -->
               <div class="col tweet-arrow text-muted">
@@ -199,14 +203,11 @@ lab04 204212 sec001 -->
             </div>
             
             <div class="tweet-text">
-              The cat is about to go in and wake up the Shiba. It's a very
-              cute picture!.
+              
+              ${contact_data.message}
             </div>
             
             <div class="row text-muted">
-              <div class="col-md-2">
-                <span class="oi oi-bullhorn"></span>
-              </div>
               <div class="col-md-2">
                 <span class="oi oi-loop-circular"></span>
               </div>
@@ -216,42 +217,101 @@ lab04 204212 sec001 -->
               <div class="col-md-2">
                 <span class="oi oi-envelope-open"></span>
               </div>
+              <div class="col-md-2">
+                <span><button id="edit" onclick="editPost(this)" dataContact='${JSON.stringify(contact_data)}' href="javascript:void(0)" title="Edit">
+                  ✏️</button></span>
+              </div>
+              <div class="col-md-2">
+                <span><button id="remove" onclick="removePost(this)" dataContact='${JSON.stringify(contact_data)}' href="javascript:void(0)" title="Remove">
+                  🗑️</button></span>
+              </div>
             </div>
           </div>
         </div>`;
-        console.log($(".tweet").html())
         $(".tweet").html($(".tweet").html()+post_block);
       }
 
+      
+
       $(".formInput").submit(function (event) {
         // prevent default html form submission action
+        $('.formInput').hide();
+        $('.tweet').show();
+        
+
         event.preventDefault();
+        // pack the inputs into a dictionary
+        var formData = {};
+        $(":input").each(function () {
+          var key = $(this).attr("name");
+          var val = $(this).val();
+          if (key != "submit") {
+            formData[key] = val;
+          }
+        });
 
-      // pack the inputs into a dictionary
-      var formData = {};
-      $(":input").each(function () {
-        var key = $(this).attr("name");
-        var val = $(this).val();
-        if (key != "submit") {
-          formData[key] = val;
-        }
+        var $form = $(this);
+        var url = $form.attr("action");
+      
+        //เอาข้อมูลจาก formData ส่งไปหลังบ้าน
+        // make a POST call to the back end w/ a callback to refresh the table
+        $.post(url, formData, function () {
+          $(".tweet").html("")
+          //console.log(formData)
+          //ขอข้อมูลจากหลังบ้านส่งมาหน้าบ้าน
+          $.get("/hw10/blogEntries", (contacts)=>{
+            //console.log(contacts);
+            // Reverse the array
+            contacts.reverse();
+            $.each(contacts, (index, value)=>{
+              addPost(value)
+            })
+
+          });
+          clearForm();
+        });
       });
 
-      var $form = $(this);
-      var url = $form.attr("action");
-     
-      // make a POST call to the back end w/ a callback to refresh the table
-      $.post(url, formData, function (contact_data) {
-        addPost(contact_data);
-        clearForm();
-      });
-    });
+      function clearForm() {
+        $(".formInput")[0].reset();
+        $("#entryid").val("");
+      }
 
-    function clearForm() {
-      $(".formInput")[0].reset();
-      $("#entryid").val("");
-    }
 
+      function editPost(blog){
+        const contact_data = JSON.parse(blog.getAttribute('dataContact'));
+        document.getElementById('tweet-input namePost').value = contact_data.name;
+        document.getElementById('tweet-input emailPost').value = contact_data.email;
+        document.getElementById('tweet-input messagePost').value = contact_data.message;
+        document.getElementById('entryid').value = contact_data.id;
+        // Show the form
+        //document.getElementById('addTweetForm').style.display = 'block';
+        $('.formInput').show()
+        $('.tweet').hide()
+      };
+
+      function removePost(blog){
+        const contact_data = JSON.parse(blog.getAttribute('dataContact'));
+        var url = "/hw10/remove_blogEntries";
+        var formData = { id: contact_data.id };
+        $.post(url, formData, function () {
+          //$(".tweet").html("")
+          //console.log(formData)
+          //ขอข้อมูลจากหลังบ้านส่งมาหน้าบ้าน
+          $.get("/hw10/blogEntries", (contacts)=>{
+            //console.log(contacts);
+            // Reverse the array
+            contacts.reverse();
+            $.each(contacts, (index, value)=>{
+              addPost(value)
+            })
+
+          });
+          clearForm();
+        });
+      }
+          
+          
     </script>
 
  

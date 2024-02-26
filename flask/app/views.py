@@ -16,10 +16,7 @@ from app.models.authuser import AuthUser
 import secrets
 import string
 
-
-
 from app import oauth
-
 from app import hw_views
 
 
@@ -249,9 +246,9 @@ def lab11_logout():
     logout_user()
     return redirect(url_for('lab11_index'))
 
+
 @app.route('/google/')
 def google():
-
 
     oauth.register(
         name='google',
@@ -263,12 +260,9 @@ def google():
         }
     )
 
-
    # Redirect to google_auth function
     redirect_uri = url_for('google_auth', _external=True)
     return oauth.google.authorize_redirect(redirect_uri)
-
-
 
 
 @app.route('/google/auth/')
@@ -276,26 +270,26 @@ def google_auth():
     token = oauth.google.authorize_access_token()
     app.logger.debug(str(token))
 
-
     userinfo = token['userinfo']
     app.logger.debug(" Google User " + str(userinfo))
     email = userinfo['email']
     user = AuthUser.query.filter_by(email=email).first()
 
-
     if not user:
-        name = userinfo.get('given_name','') + " " + userinfo.get('family_name','')
+        name = userinfo.get('given_name', '') + " " + \
+            userinfo.get('family_name', '')
         random_pass_len = 8
         password = ''.join(secrets.choice(string.ascii_uppercase + string.digits)
-                          for i in range(random_pass_len))
+                           for i in range(random_pass_len))
         picture = userinfo['picture']
         new_user = AuthUser(email=email, name=name,
-                           password=generate_password_hash(
-                               password, method='sha256'),
-                           avatar_url=picture)
+                            password=generate_password_hash(
+                                password, method='sha256'),
+                            avatar_url=picture)
         db.session.add(new_user)
         db.session.commit()
         user = AuthUser.query.filter_by(email=email).first()
     login_user(user)
     return redirect('/lab10')
+
 
